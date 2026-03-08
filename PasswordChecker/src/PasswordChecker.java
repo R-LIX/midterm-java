@@ -52,7 +52,13 @@ public class PasswordChecker {
         
         System.out.println("Password Strength: " + strength);
         System.out.println("Password is valid.");
-    }
+        System.out.println("Want to try again? (yes/no):");
+        if (scanner.nextLine().equals("yes")){
+            main(args);
+    }else{
+            System.out.println("Goodbye!");
+        }
+        }
 
 }
     

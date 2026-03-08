@@ -64,7 +64,7 @@ public class PasswordScore {
                 return 0;
             }
         }
-        return 1;
+        return 20;
     }
 
     // TO DO: more functions

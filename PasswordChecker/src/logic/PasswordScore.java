@@ -1,5 +1,5 @@
 package logic;
-import java.util.List;
+
 import model.Password;
 
 public class PasswordScore {
@@ -61,7 +61,9 @@ public class PasswordScore {
         String[] stringArray = pw.split("");
         for (int i=0; i<stringArray.length -1; i++){
             if(stringArray[i].contains(stringArray[i+1])) {
-                return 0;
+                int count = 0;
+                count++;
+                return 20-count*(20/stringArray.length);
             }
         }
         return 20;

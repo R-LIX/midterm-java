@@ -15,10 +15,10 @@ public class PasswordChecker {
         System.out.print("Please enter your password:");
         String password = scanner.nextLine();
         // Validate username and password
-        System.out.print("Confirm set username & password:");
+        System.out.print("Confirm set username & password (yes/no):");
         String confirm = scanner.nextLine();
         if (confirm.equals("yes")){
-        System.out.print("username & password Confirm (yes/no): ");
+        System.out.println("username & password Confirm! ");
         }else{
             System.out.println("Please input again.");
             main(args);
@@ -47,8 +47,12 @@ public class PasswordChecker {
         }
         int score = PasswordScore.calculateScore(passwordObj);
         String strength = classifyPassword(score);
-        System.out.println("Password Score: " + score);
+        if(score > 0) {
+            System.out.println("Password Score: " + score);
+        
         System.out.println("Password Strength: " + strength);
+        System.out.println("Password is valid.");
+    }
 
 }
     
@@ -56,7 +60,7 @@ public class PasswordChecker {
     public static String classifyPassword(int score) {
         if (score <= 33) {
             return "Weak";
-        } else if (score <= 66) {
+        } else if (score <= 66 && score>33) {
             return "Medium";
         } else {
             return "Strong";

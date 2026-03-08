@@ -1,5 +1,5 @@
 package logic;
-
+import java.util.List;
 import model.Password;
 
 public class PasswordScore {
@@ -18,6 +18,8 @@ public class PasswordScore {
         score += specialSymbolScore(pw);
         score += numberScore(pw);
         score += capitalScore(pw);
+        score += patternScore(pw);
+        score += uniqueScore(pw);
 
         return score;
     }
@@ -47,12 +49,21 @@ public class PasswordScore {
     }
 
     // TO DO
-    private int patternScore() {
-        return 1;
+    private static int patternScore(String pw) {
+        if (pw.matches(".*(12345678|abcd1234|password|qwerty12|letmein|admin|welcome|iloveyou).*")) {
+            return 0;
+        }
+        return 20;
     }
 
     // TO DO
-    private int uniqueScore() {
+    private static int uniqueScore(String pw) {
+        String[] stringArray = pw.split("");
+        for (int i=0; i<stringArray.length -1; i++){
+            if(stringArray[i].contains(stringArray[i+1])) {
+                return 0;
+            }
+        }
         return 1;
     }
 

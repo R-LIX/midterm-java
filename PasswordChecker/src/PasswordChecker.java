@@ -8,40 +8,30 @@ public class PasswordChecker {
     private final Scanner scanner = new Scanner(System.in);
 
     public void main(String[] args) {
-
+        // Boolean flag to keeps program running until user says ends
+        boolean running = true;
         // User input for username and password
+        while (running) {
+            Password password = inputPassword();
+            if (password == null) {
+                System.out.println("Goodbye");
+                return;
+            }
+            // Calculate score
+            PasswordScore passwordScore = new PasswordScore(password);
+            int score = passwordScore.getScore();
+            // Output password strength
+            outputPasswordStrength(score);
 
-        Password password = inputPassword();
-        if (password == null) {
-            System.out.println("Goodbye");
-            return;
+            System.out.println("Want to try again? (y/n):");
+            String userInput = scanner.nextLine();
+
+            if (userInput.equalsIgnoreCase("n")) {
+                running = false;
+                System.out.println("Goodbye");
+            }
         }
-
-        // Calculate score
-
-        PasswordScore passwordScore = new PasswordScore(password);
-        int score = passwordScore.getScore();
-
-        // Output password strength
-        outputPasswordStrength(score);
-
-//
-//
-//            System.out.println("Want to try again? (yes/no):");
-//        }
-//
-//        if (scanner.nextLine().equals("yes")) {
-//            main(args);
-//        } else {
-//            System.out.println("Goodbye!");
-//        }
-//    }
-//
-//
-//
-
     }
-
 
     public Password inputPassword() {
         while (true) {
@@ -87,6 +77,7 @@ public class PasswordChecker {
             System.out.println("Password Strength: " + strength);
 
     }
+
     // Helper function
     public static String classifyPassword(int score) {
         if (score <= 33) {

@@ -7,7 +7,6 @@ import java.util.Scanner;
 public class PasswordChecker {
     private final Scanner scanner = new Scanner(System.in);
 
-    //TO-DO
     public void main(String[] args) {
 
         // User input for username and password
@@ -18,13 +17,13 @@ public class PasswordChecker {
             return;
         }
 
-//        // Calculate score
-//
-//        // Output password strength
+        // Calculate score
 
+        PasswordScore passwordScore = new PasswordScore(password);
+        int score = passwordScore.getScore();
 
-//
-//        int score = PasswordScore.calculateScore(passwordObj);
+        // Output password strength
+
 //        String strength = classifyPassword(score);
 //
 //        if (score > 0) {
@@ -88,8 +87,6 @@ public class PasswordChecker {
             }
 
         }
-
-
     }
 
 }

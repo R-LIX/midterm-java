@@ -10,7 +10,7 @@ public class Password {
 
         this.username = username;
         // Validation logic here and throw exception.InvalidPasswordException if invalid
-        if (password.length() <= 8) {
+        if (password.length() < 8) {
             throw new InvalidPasswordException("Password must be at least 8 characters long");
         }
 

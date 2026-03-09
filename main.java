@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class Main {  // Class names should start with uppercase
+public class main {  // Class names should start with uppercase
 
     public static void main(String[] args) {
         // Fei and Lika
@@ -66,7 +66,7 @@ public class Main {  // Class names should start with uppercase
         return false;
     }
 
-            //Hour and Yuth
+        //Hour and Yuth
         //Password Validation
  
         

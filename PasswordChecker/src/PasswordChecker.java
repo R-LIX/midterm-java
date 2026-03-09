@@ -23,13 +23,10 @@ public class PasswordChecker {
         int score = passwordScore.getScore();
 
         // Output password strength
+        outputPasswordStrength(score);
 
-//        String strength = classifyPassword(score);
 //
-//        if (score > 0) {
-//            System.out.println("Password Score: " + score);
 //
-//            System.out.println("Password Strength: " + strength);
 //            System.out.println("Want to try again? (yes/no):");
 //        }
 //
@@ -44,14 +41,8 @@ public class PasswordChecker {
 //
 
     }
-//    public static String classifyPassword(int score) {
-//        if (score <= 33) {
-//            return "Weak";
-//        } else if (score <= 66 && score > 33) {
-//            return "Medium";
-//        } else {
-//            return "Strong";
-//        }
+
+
     public Password inputPassword() {
         while (true) {
             System.out.print("Please enter your username: ");
@@ -86,6 +77,24 @@ public class PasswordChecker {
                 return null;
             }
 
+        }
+    }
+    public void outputPasswordStrength(int score) {
+        String strength = classifyPassword(score);
+        if (score > 0) {
+            System.out.println("Password Score: " + score);
+        }
+            System.out.println("Password Strength: " + strength);
+
+    }
+    // Helper function
+    public static String classifyPassword(int score) {
+        if (score <= 33) {
+            return "Weak";
+        } else if (score <= 66 && score > 33) {
+            return "Medium";
+        } else {
+            return "Strong";
         }
     }
 

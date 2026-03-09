@@ -50,8 +50,8 @@ public class PasswordScore {
 
     // TO DO
     private static int patternScore(String pw) {
-        if (pw.matches(".*(12345678|abcd1234|password|qwerty12|letmein|admin|welcome|iloveyou).*")) {
-            return 0;
+        if (pw.matches(".*(12345678|abcd1234|password|qwerty12|letmein12|admin1234|welcome12|iloveyou1|pass1234|qwerty123|abc12345|abc123456|asdf1234|asdfghjk|zxcvbnm1|zxcvbnm12|qazwsxed|qazwsxed12|test1234|test12345|user12345|login1234|guest1234|root12345|master12|dragon123|shadow123|monkey123|football1|sunshine1|princess1|superman1|freedom12|whatever1|trustno1|hunter22|killer12|batman12|pokemon12|naruto123|welcome123).*")) {
+            return -38;
         }
         return 20;
     }

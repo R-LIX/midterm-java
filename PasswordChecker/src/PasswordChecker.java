@@ -22,14 +22,8 @@ public class PasswordChecker {
             int score = passwordScore.getScore();
             // Output password strength
             outputPasswordStrength(score);
-
-            System.out.println("Want to try again? (y/n):");
-            String userInput = scanner.nextLine();
-
-            if (userInput.equalsIgnoreCase("n")) {
-                running = false;
-                System.out.println("Goodbye");
-            }
+            // Ask user to try again
+            running = tryAgain();
         }
     }
 
@@ -76,6 +70,16 @@ public class PasswordChecker {
         }
             System.out.println("Password Strength: " + strength);
 
+    }
+    public boolean tryAgain() {
+        System.out.println("Want to try again? (y/n):");
+        String userInput = scanner.nextLine();
+
+        if (userInput.equalsIgnoreCase("n")) {
+            System.out.println("Goodbye");
+            return false;
+        }
+        return true;
     }
 
     // Helper function

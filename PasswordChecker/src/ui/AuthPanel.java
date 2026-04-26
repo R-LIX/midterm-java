@@ -1,7 +1,9 @@
 package ui;
 
 import exception.InvalidPasswordException;
+import exception.RecordExistException;
 import logic.PasswordScore;
+import logic.UserStore;
 import model.Password;
 
 import javax.swing.*;
@@ -12,6 +14,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
+import java.io.IOException;
 
 public class AuthPanel extends JPanel {
 
@@ -115,6 +118,15 @@ public class AuthPanel extends JPanel {
         cards.show(formHolder, signIn ? "SIGNIN" : "SIGNUP");
         styleTab(tabSignIn,  signIn);
         styleTab(tabSignUp, !signIn);
+        if (signIn) {
+            siError.setForeground(C_ERROR_RED);
+            siError.setText(" ");
+            siUsername.setInvalid(false);
+        } else {
+            suError.setForeground(C_ERROR_RED);
+            suError.setText(" ");
+            suUsername.setInvalid(false);
+        }
     }
 
     // ── sign-in form ──────────────────────────────────────────────────────────
@@ -128,6 +140,7 @@ public class AuthPanel extends JPanel {
         p.add(gap(36));
 
         siUsername = new FloatLabelField("Username", false);
+        siUsername.addTypingListener(() -> SwingUtilities.invokeLater(this::validateSignInUsernameRealtime));
         p.add(siUsername);
         p.add(gap(20));
 
@@ -159,6 +172,7 @@ public class AuthPanel extends JPanel {
         p.add(gap(36));
 
         suUsername = new FloatLabelField("Username", false);
+        suUsername.addTypingListener(() -> SwingUtilities.invokeLater(this::validateSignUpUsernameRealtime));
         p.add(suUsername);
         p.add(gap(20));
 
@@ -252,18 +266,19 @@ public class AuthPanel extends JPanel {
         ruleSpecial.setPassed(hasSpecial);
         ruleNumber.setPassed(hasNumber);
 
-        int score;
-        try {
-            String user   = suUsername.getText().trim().isEmpty() ? "placeholder" : suUsername.getText().trim();
-            String padded = pwd.length() < 8 ? pwd + "XXXXXXXX" : pwd;
-            score = new PasswordScore(new Password(user, padded)).getScore();
-        } catch (InvalidPasswordException ignored) { score = 0; }
+        int score = PasswordScore.calculateScore(pwd);
+        int criteriaCount = PasswordScore.coreCriteriaCount(pwd);
 
-        segmentedBar.set(score);
+        segmentedBar.set(criteriaCount);
         Color lc; String lv;
-        if      (score < 40)  { lc = C_ERROR_RED;      lv = "Weak"; }
-        else if (score <= 70) { lc = C_WARNING_YELLOW; lv = "Medium"; }
-        else                  { lc = C_ACCENT_GREEN;   lv = "Strong"; }
+        lv = PasswordScore.levelFromCriteriaCount(criteriaCount);
+        if ("Strong".equals(lv)) {
+            lc = C_ACCENT_GREEN;
+        } else if ("Medium".equals(lv)) {
+            lc = C_WARNING_YELLOW;
+        } else {
+            lc = C_ERROR_RED;
+        }
         strengthText.setText("  " + lv);
         strengthText.setForeground(lc);
         strengthDot.animateTo(lc);
@@ -291,23 +306,132 @@ public class AuthPanel extends JPanel {
     private void doSignIn() {
         String username = siUsername.getText().trim();
         String password = siPassword.getText();
-        if (username.isEmpty() || password.isEmpty()) { siError.setText("⚠  Please fill in all fields"); return; }
+
+        siError.setForeground(C_ERROR_RED);
+        if (username.isEmpty() || password.isEmpty()) {
+            siError.setText("⚠  Please fill in all fields");
+            return;
+        }
+
         try {
-            int score = new PasswordScore(new Password(username, password)).getScore();
-            showResult(username, password, score);
-        } catch (InvalidPasswordException ex) { siError.setText("⚠  " + ex.getMessage()); }
+            if (!UserStore.usernameExists(username)) {
+                siUsername.setInvalid(true);
+                siError.setText("⚠  Username does not exist");
+                return;
+            }
+            siUsername.setInvalid(false);
+
+            if (!UserStore.validateLogin(username, password)) {
+                siError.setText("⚠  Incorrect password");
+                return;
+            }
+
+            showLoginSuccess(username);
+        } catch (IOException ex) {
+            siError.setText("⚠  Could not read user database");
+        }
     }
 
     private void doSignUp() {
         String username = suUsername.getText().trim();
         String password = suPassword.getText();
         String confirm  = suConfirm.getText();
-        if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) { suError.setText("⚠  Please fill in all fields"); return; }
-        if (!password.equals(confirm)) { suError.setText("⚠  Passwords do not match"); return; }
+
+        suError.setForeground(C_ERROR_RED);
+        if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+            suError.setText("⚠  Please fill in all fields");
+            return;
+        }
+
+        if (!password.equals(confirm)) {
+            suError.setText("⚠  Passwords do not match");
+            return;
+        }
+
+        if (username.contains(":")) {
+            suError.setText("⚠  Username cannot contain ':'");
+            return;
+        }
+
         try {
-            int score = new PasswordScore(new Password(username, password)).getScore();
-            showResult(username, password, score);
-        } catch (InvalidPasswordException ex) { suError.setText("⚠  " + ex.getMessage()); }
+            Password passwordModel = new Password(username, password);
+            int score = new PasswordScore(passwordModel).getScore();
+            UserStore.createUser(username, password);
+            suUsername.setInvalid(false);
+            showSignUpResult(username, password, score);
+        } catch (InvalidPasswordException ex) {
+            suError.setText("⚠  " + ex.getMessage());
+        } catch (RecordExistException ex) {
+            suError.setText("⚠  " + ex.getMessage());
+        } catch (IOException ex) {
+            suError.setText("⚠  Could not save account");
+        }
+    }
+
+    private void showSignUpResult(String user, String password, int score) {
+        frame.getContentPane().removeAll();
+        frame.add(ResultPanel.forAccountCreated(frame, user, password, score));
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void showLoginSuccess(String user) {
+        frame.getContentPane().removeAll();
+        frame.add(ResultPanel.forLoginSuccess(frame, user));
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void validateSignUpUsernameRealtime() {
+        String username = suUsername.getText().trim();
+        if (username.isEmpty()) {
+            suUsername.setInvalid(false);
+            suError.setForeground(C_ERROR_RED);
+            suError.setText(" ");
+            return;
+        }
+
+        try {
+            if (UserStore.usernameExists(username)) {
+                suUsername.setInvalid(true);
+                suError.setForeground(C_ERROR_RED);
+                suError.setText("⚠  Username already exists");
+            } else {
+                suUsername.setInvalid(false);
+                suError.setForeground(C_ERROR_RED);
+                suError.setText(" ");
+            }
+        } catch (IOException ex) {
+            suUsername.setInvalid(true);
+            suError.setForeground(C_ERROR_RED);
+            suError.setText("⚠  Could not read user database");
+        }
+    }
+
+    private void validateSignInUsernameRealtime() {
+        String username = siUsername.getText().trim();
+        if (username.isEmpty()) {
+            siUsername.setInvalid(false);
+            siError.setForeground(C_ERROR_RED);
+            siError.setText(" ");
+            return;
+        }
+
+        try {
+            if (UserStore.usernameExists(username)) {
+                siUsername.setInvalid(false);
+                siError.setForeground(C_ERROR_RED);
+                siError.setText(" ");
+            } else {
+                siUsername.setInvalid(true);
+                siError.setForeground(C_ERROR_RED);
+                siError.setText("⚠  Username does not exist");
+            }
+        } catch (IOException ex) {
+            siUsername.setInvalid(true);
+            siError.setForeground(C_ERROR_RED);
+            siError.setText("⚠  Could not read user database");
+        }
     }
 
     private void showResult(String user, String password, int score) {
@@ -459,6 +583,7 @@ public class AuthPanel extends JPanel {
         private Timer focusTimer;
 
         private boolean focused = false;
+        private boolean invalid = false;
         private Runnable typingListener;
 
         FloatLabelField(String placeholder, boolean isPassword) {
@@ -507,15 +632,13 @@ public class AuthPanel extends JPanel {
                     focused = true;
                     animLabel(1f);
                     animBg(1f);
-                    animBorder(C_BORDER_FOC);
-                    animFocus(1f);
+                    refreshFieldState();
                 }
                 public void focusLost(FocusEvent e) {
                     focused = false;
                     if (getText().isEmpty()) animLabel(0f);
                     animBg(0f);
-                    animBorder(C_BORDER_IDLE);
-                    animFocus(0f);
+                    refreshFieldState();
                 }
             });
 
@@ -533,6 +656,29 @@ public class AuthPanel extends JPanel {
 
         String getText() {
             return isPassword ? new String(passField.getPassword()) : textField.getText();
+        }
+
+        void setText(String value) {
+            if (isPassword) {
+                passField.setText(value);
+            } else {
+                textField.setText(value);
+            }
+        }
+
+        void setInvalid(boolean invalid) {
+            this.invalid = invalid;
+            refreshFieldState();
+        }
+
+        private void refreshFieldState() {
+            if (invalid) {
+                animBorder(C_ERROR_RED);
+                animFocus(1f);
+            } else {
+                animBorder(focused ? C_BORDER_FOC : C_BORDER_IDLE);
+                animFocus(focused ? 1f : 0f);
+            }
         }
 
         // ── three independent animation methods ──────────────────────────────
@@ -614,7 +760,8 @@ public class AuthPanel extends JPanel {
 
             // focus glow: two soft rings just outside the field box
             if (focusP > 0) {
-                int r = C_PRIMARY.getRed(), gv = C_PRIMARY.getGreen(), b2 = C_PRIMARY.getBlue();
+                Color glow = invalid ? C_ERROR_RED : C_PRIMARY;
+                int r = glow.getRed(), gv = glow.getGreen(), b2 = glow.getBlue();
                 g2.setStroke(new BasicStroke(3f));
                 g2.setColor(new Color(r, gv, b2, (int)(18 * focusP)));
                 g2.draw(new RoundRectangle2D.Float(
@@ -817,9 +964,18 @@ public class AuthPanel extends JPanel {
             setAlignmentX(LEFT_ALIGNMENT);
         }
 
-        void set(int score) {
-            targetSegs  = score < 40 ? 1 : (score <= 70 ? 2 : 3);
-            targetColor = score < 40 ? C_ERROR_RED : (score <= 70 ? C_WARNING_YELLOW : C_ACCENT_GREEN);
+        void set(int criteriaCount) {
+            String level = PasswordScore.levelFromCriteriaCount(criteriaCount);
+            if ("Strong".equals(level)) {
+                targetSegs = 3;
+                targetColor = C_ACCENT_GREEN;
+            } else if ("Medium".equals(level)) {
+                targetSegs = 2;
+                targetColor = C_WARNING_YELLOW;
+            } else {
+                targetSegs = 1;
+                targetColor = C_ERROR_RED;
+            }
             if (timer != null && timer.isRunning()) timer.stop();
             timer = new Timer(16, e -> {
                 segColor = new Color(lerp(segColor.getRed(), targetColor.getRed(), 5),

@@ -1,9 +1,9 @@
 package ui;
 
+import logic.PasswordScore;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import model.Password;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -37,33 +37,114 @@ public class ResultPanel extends JPanel {
     private final int    score;
     private final Color  levelColor;
     private final String levelText;
+    private final String titleText;
+    private final String subtitlePrefix;
+    private final String actionText;
+    private final Runnable action;
+    private final boolean showScoreCard;
 
     // real password checks
     private final boolean hasLen, hasUpper, hasSpecial, hasNumber;
 
     public ResultPanel(JFrame frame, String username, String password, int score) {
+        this(
+            frame,
+            username,
+            password,
+            score,
+            "Password checked!",
+            "Checked for: ",
+            "Check another password",
+            true,
+            () -> {
+                frame.getContentPane().removeAll();
+                frame.add(new AuthPanel(frame));
+                frame.revalidate();
+                frame.repaint();
+            }
+        );
+    }
+
+    public static ResultPanel forAccountCreated(JFrame frame, String username, String password, int score) {
+        return new ResultPanel(
+            frame,
+            username,
+            password,
+            score,
+            "Account created!",
+            "Score for: ",
+            "Go to Sign in",
+            true,
+            () -> {
+                frame.getContentPane().removeAll();
+                frame.add(new AuthPanel(frame));
+                frame.revalidate();
+                frame.repaint();
+            }
+        );
+    }
+
+    public static ResultPanel forLoginSuccess(JFrame frame, String username) {
+        return new ResultPanel(
+            frame,
+            username,
+            "",
+            100,
+            "You are logged in",
+            "Welcome back, ",
+            "Sign out",
+            false,
+            () -> {
+                frame.getContentPane().removeAll();
+                frame.add(new AuthPanel(frame));
+                frame.revalidate();
+                frame.repaint();
+            }
+        );
+    }
+
+    private ResultPanel(
+        JFrame frame,
+        String username,
+        String password,
+        int score,
+        String titleText,
+        String subtitlePrefix,
+        String actionText,
+        boolean showScoreCard,
+        Runnable action
+    ) {
         this.score = score;
+        this.titleText = titleText;
+        this.subtitlePrefix = subtitlePrefix;
+        this.actionText = actionText;
+        this.showScoreCard = showScoreCard;
+        this.action = action;
 
         hasLen     = password.length() >= 8;
         hasUpper   = password.matches(".*[A-Z].*");
         hasSpecial = password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?`~].*");
         hasNumber  = password.matches(".*[0-9].*");
-          try {
-        String hashed = Password.getMD5(password);
-        System.out.println("Password: " + password);
-        System.out.println("MD5 Hash: " + hashed);
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
 
-        if      (score < 40)  { levelColor = C_ERROR_RED;      levelText = "Weak"; }
-        else if (score <= 70) { levelColor = C_WARNING_YELLOW; levelText = "Medium"; }
-        else                  { levelColor = C_ACCENT_GREEN;   levelText = "Strong"; }
+        if (showScoreCard) {
+            int criteriaCount = PasswordScore.coreCriteriaCount(password);
+            levelText = PasswordScore.levelFromCriteriaCount(criteriaCount);
+        } else {
+            levelText = "Strong";
+        }
+
+        if ("Strong".equals(levelText)) {
+            levelColor = C_ACCENT_GREEN;
+        } else if ("Medium".equals(levelText)) {
+            levelColor = C_WARNING_YELLOW;
+        } else {
+            levelColor = C_ERROR_RED;
+        }
 
         setBackground(Color.WHITE);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(40, 56, 40, 56));
-        add(buildContent(frame, username), BorderLayout.CENTER);
+        add(buildContent(username), BorderLayout.CENTER);
         SwingUtilities.invokeLater(this::startEntrance);
     }
 
@@ -72,7 +153,7 @@ public class ResultPanel extends JPanel {
         this(frame, username, "", score);
     }
 
-    private JPanel buildContent(JFrame frame, String username) {
+    private JPanel buildContent(String username) {
         JPanel p = new JPanel();
         p.setBackground(Color.WHITE);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -120,21 +201,19 @@ public class ResultPanel extends JPanel {
         circleSlot.setOpaque(false);
         circleSlot.setAlignmentX(CENTER_ALIGNMENT);
 
-        JLabel title = label("Password checked!", FONT_TITLE, C_TEXT_PRIMARY);
+        JLabel title = label(titleText, FONT_TITLE, C_TEXT_PRIMARY);
         title.setAlignmentX(CENTER_ALIGNMENT);
 
-        JLabel sub = label("Checked for: " + username, FONT_BODY, C_TEXT_SECONDARY);
+        JLabel sub = label(subtitlePrefix + username, FONT_BODY, C_TEXT_SECONDARY);
         sub.setAlignmentX(CENTER_ALIGNMENT);
 
-        JPanel card = buildScoreCard();
-        card.setAlignmentX(CENTER_ALIGNMENT);
+        JPanel card = null;
+        if (showScoreCard) {
+            card = buildScoreCard();
+            card.setAlignmentX(CENTER_ALIGNMENT);
+        }
 
-        JButton btn = buildBtn("Check another password", () -> {
-            frame.getContentPane().removeAll();
-            frame.add(new AuthPanel(frame));
-            frame.revalidate();
-            frame.repaint();
-        });
+        JButton btn = buildBtn(actionText, action);
         btn.setAlignmentX(CENTER_ALIGNMENT);
 
         p.add(Box.createVerticalGlue());
@@ -143,9 +222,13 @@ public class ResultPanel extends JPanel {
         p.add(title);
         p.add(gap(10));
         p.add(sub);
-        p.add(gap(40));
-        p.add(card);
-        p.add(gap(36));
+        if (showScoreCard) {
+            p.add(gap(40));
+            p.add(card);
+            p.add(gap(36));
+        } else {
+            p.add(gap(24));
+        }
         p.add(btn);
         p.add(Box.createVerticalGlue());
         return p;

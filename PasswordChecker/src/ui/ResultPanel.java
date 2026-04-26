@@ -2,6 +2,9 @@ package ui;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import model.Password;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -45,6 +48,13 @@ public class ResultPanel extends JPanel {
         hasUpper   = password.matches(".*[A-Z].*");
         hasSpecial = password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?`~].*");
         hasNumber  = password.matches(".*[0-9].*");
+          try {
+        String hashed = Password.getMD5(password);
+        System.out.println("Password: " + password);
+        System.out.println("MD5 Hash: " + hashed);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
 
         if      (score < 40)  { levelColor = C_ERROR_RED;      levelText = "Weak"; }
         else if (score <= 70) { levelColor = C_WARNING_YELLOW; levelText = "Medium"; }

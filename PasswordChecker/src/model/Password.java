@@ -1,6 +1,8 @@
 package model;
 
 import exception.InvalidPasswordException;
+import java.security.MessageDigest;
+import java.math.BigInteger;
 
 public class Password {
     private String username;
@@ -38,7 +40,12 @@ public class Password {
 
         this.username = username;
     }
-
+public static String getMD5(String input) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] messageDigest = md.digest(input.getBytes());
+        // Convert to hex string
+        return new BigInteger(1, messageDigest).toString(16);
+    }
     @Override
     public String toString() {
         return "model.Password{" +

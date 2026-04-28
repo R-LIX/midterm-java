@@ -1,8 +1,5 @@
-package com.midterm_java;
+package com.form.password;
 
-import com.midterm_java.exception.InvalidPasswordException;
-import com.midterm_java.model.Password;
-import com.midterm_java.logic.PasswordScore;
 import java.util.Scanner;
 
 

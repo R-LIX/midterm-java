@@ -1,6 +1,4 @@
-package com.midterm_java.model;
-
-import com.midterm_java.exception.InvalidPasswordException;
+package com.form.password;
 
 public class Password {
     private String username;

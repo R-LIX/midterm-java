@@ -1,6 +1,6 @@
-package logic;
+package com.midterm_java.logic;
 
-import model.Password;
+import com.midterm_java.model.Password;
 
 public class PasswordScore {
     // Introduced class variable for password and score for easy access and remove redundancy in code

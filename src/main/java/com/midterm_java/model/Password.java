@@ -1,6 +1,6 @@
-package model;
+package com.midterm_java.model;
 
-import exception.InvalidPasswordException;
+import com.midterm_java.exception.InvalidPasswordException;
 
 public class Password {
     private String username;
@@ -9,7 +9,7 @@ public class Password {
     public Password(String username, String password) throws InvalidPasswordException {
 
         this.username = username;
-        // Validation logic here and throw exception.InvalidPasswordException if invalid
+        // Validation main.java.com.midterm_java.logic here and throw main.java.com.midterm_java.exception.InvalidPasswordException if invalid
         if (password.length() < 8) {
             throw new InvalidPasswordException("Password must be at least 8 characters long");
         }
@@ -39,7 +39,7 @@ public class Password {
 
     @Override
     public String toString() {
-        return "model.Password{" +
+        return "main.java.com.midterm_java.model.Password{" +
                 "username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 '}';

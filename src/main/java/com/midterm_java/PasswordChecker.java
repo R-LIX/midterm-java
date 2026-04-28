@@ -1,13 +1,19 @@
-import exception.InvalidPasswordException;
-import model.Password;
-import logic.PasswordScore;
+package com.midterm_java;
+
+import com.midterm_java.exception.InvalidPasswordException;
+import com.midterm_java.model.Password;
+import com.midterm_java.logic.PasswordScore;
 import java.util.Scanner;
 
 
 public class PasswordChecker {
     private final Scanner scanner = new Scanner(System.in);
 
-    public void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
+        new PasswordChecker().run();
+    }
+
+    public void run() {
         // Boolean flag to keeps program running until user says ends
         boolean running = true;
         // User input for username and password

@@ -5,7 +5,8 @@ out/
 .kotlin
 .idea/
 midterm-java.iml
-.production/
+production/
+target/
 
 ### Eclipse ###
 .apt_generated

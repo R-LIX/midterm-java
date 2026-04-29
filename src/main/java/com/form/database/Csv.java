@@ -62,7 +62,8 @@ public class Csv {
         if (records.isEmpty()) return new HashMap<>();
 
         for (String[] record : records) {
-            if (record[0].equalsIgnoreCase(header.getFirst())) continue;
+            if (record[0].equalsIgnoreCase(header.getFirst()) || record.length == 1) continue;
+
             map.put(record[0], record[1]);
         }
         return map;

@@ -23,4 +23,12 @@ public class UserRepository {
         users.remove(username);
     }
 
+    public boolean exists(User user) {
+        if (users.containsKey(user.getUsername())) {
+            return true;
+        }
+        throw new UserNotFoundException(user.getUsername());
+    }
+
+
 }

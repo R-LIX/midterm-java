@@ -10,7 +10,7 @@ public class PasswordScore {
         this.password = password;
     }
 
-    public int getScore() {
+    public Integer getScore() {
         // Return score for pattern and unique and more
         score += specialSymbolScore();
         score += numberScore();
@@ -22,7 +22,7 @@ public class PasswordScore {
     }
 
     // +20 if password contains a special symbol
-    private int specialSymbolScore() {
+    private Integer specialSymbolScore() {
         if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?`~].*")) {
             return 20;
         }
@@ -30,7 +30,7 @@ public class PasswordScore {
     }
 
     // +20 if password contains a number
-    private int numberScore() {
+    private Integer numberScore() {
         if (password.matches(".*[0-9].*")) {
             return 20;
         }
@@ -38,7 +38,7 @@ public class PasswordScore {
     }
 
     // +20 if password contains a capitalized letter
-    private int capitalScore() {
+    private Integer capitalScore() {
         if (password.matches(".*[A-Z].*")) {
             return 20;
         }
@@ -46,7 +46,7 @@ public class PasswordScore {
     }
 
     // TO DO
-    private  int patternScore() {
+    private Integer patternScore() {
         if (password.matches(".*(12345678|abcd1234|password|qwerty12|letmein12|admin1234|welcome12|iloveyou1|pass1234|qwerty123|abc12345|abc123456|asdf1234|asdfghjk|zxcvbnm1|zxcvbnm12|qazwsxed|qazwsxed12|test1234|test12345|user12345|login1234|guest1234|root12345|master12|dragon123|shadow123|monkey123|football1|sunshine1|princess1|superman1|freedom12|whatever1|trustno1|hunter22|killer12|batman12|pokemon12|naruto123|welcome123).*")) {
             return -38;
         }
@@ -54,7 +54,7 @@ public class PasswordScore {
     }
 
     // TO DO
-    private int uniqueScore() {
+    private Integer uniqueScore() {
         String[] stringArray = password.split("");
         for (int i=0; i<stringArray.length -1; i++){
             if(stringArray[i].contains(stringArray[i+1])) {

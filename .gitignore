@@ -8,7 +8,7 @@ midterm-java.iml
 production/
 target/
 *.log
-
+claude.md
 ### Eclipse ###
 .apt_generated
 .classpath

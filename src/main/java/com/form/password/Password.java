@@ -1,9 +1,10 @@
 package com.form.password;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Password {
-    private static String hashingAlgorithm;
+    private static String hashingAlgorithm = "MD5";
 
     public static boolean validate(String username, String password) throws InvalidPasswordException {
         if (password.length() < 8) {
@@ -16,19 +17,21 @@ public class Password {
         return true;
     }
 
-     public static String hash(String password) throws Exception {
-        MessageDigest md = MessageDigest.getInstance(hashingAlgorithm);
-        byte[] messageDigest = md.digest(password.getBytes());
-        // Convert to hex string
-        return new BigInteger(1, messageDigest).toString(16);
+     public static String hash(String password) {
+         try {
+             MessageDigest md = MessageDigest.getInstance(hashingAlgorithm);
+             byte[] messageDigest = md.digest(password.getBytes());
+             // Convert to hex string
+             return new BigInteger(1, messageDigest).toString(16);
+         } catch (NoSuchAlgorithmException e) {
+             System.out.println(e.getMessage());
+         }
+         return null;
     }
 
-    public static Integer score(String password) {
-        PasswordScore passwordScore = new PasswordScore(password);
-        return passwordScore.getScore();
-    }
+    public static String rank(String password) {
+        var score = score(password);
 
-    public static String rank(int score) {
         if (score <= 33) {
             return "Weak";
         } else if (score <= 66) {
@@ -36,6 +39,11 @@ public class Password {
         } else {
             return "Strong";
         }
+    }
+
+    private static Integer score(String password) {
+        PasswordScore passwordScore = new PasswordScore(password);
+        return passwordScore.getScore();
     }
 
 

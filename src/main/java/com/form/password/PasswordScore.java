@@ -6,8 +6,8 @@ public class PasswordScore {
     private int score = 0;
 
     // TO DO
-    public PasswordScore(Password password) {
-        this.password = password.getPassword();
+    public PasswordScore(String password) {
+        this.password = password;
     }
 
     public int getScore() {
